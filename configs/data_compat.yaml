@@ -1,0 +1,11 @@
+# Compatible path conventions inherited from the earlier DPTF diagnostic code.
+interaction_candidates:
+  - processed/{domain}.csv
+  - "{domain}/processed_data.csv"
+  - "{domain}/{domain}.csv"
+
+embedding_candidates:
+  - semantic_embeddings/{domain}_embedding_llama.parquet
+  - semantic_embeddings/{domain}_embedding_llama3.parquet
+  - "{domain}/{domain}_embedding_llama.parquet"
+  - "{domain}/{domain}_embedding_llama3.parquet"
