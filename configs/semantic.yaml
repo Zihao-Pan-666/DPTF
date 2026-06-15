@@ -1,0 +1,36 @@
+data_root: ./data
+source: amazon_movies_and_tv
+targets:
+  - amazon_cds_and_vinyl
+
+paths:
+  checkpoint_dir: artifacts/checkpoints
+  result_dir: results
+  role_dir: artifacts/roles
+  prototype_dir: artifacts/prototypes
+
+data:
+  max_len: 50
+  min_len: 3
+  train_negatives: 5
+  eval_negatives: 100
+  ranking: sampled
+  seed: 2026
+  num_workers: 0
+
+model:
+  backbone: bert4rec
+  hidden_dim: 128
+  num_layers: 2
+  num_heads: 2
+  dropout: 0.2
+
+training:
+  batch_size: 128
+  epochs: 50
+  lr: 0.0001
+  weight_decay: 0.0
+  early_stop_metric: NDCG@10
+  early_stop_patience: 5
+  eval_every: 1
+  device: auto

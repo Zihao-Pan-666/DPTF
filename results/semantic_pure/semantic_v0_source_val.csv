@@ -1,0 +1,2 @@
+model,stage,source,target,seed,checkpoint,best_epoch,early_stop_metric,best_metric,ranking_mode,eval_negatives,train_samples,source_val_users,num_items,embedding_dim,total_elapsed_sec
+semantic_v0,source_val,amazon_movies_and_tv,,2026,artifacts\checkpoints\semantic_v0_amazon_movies_and_tv_seed2026.pt,29,NDCG@10,0.2575184106826782,sampled,100,2976298,179784,84909,4096,5862.193603200023

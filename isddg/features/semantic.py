@@ -1,6 +1,7 @@
-# isddg/features/semantic.py strict replacement
+# isddg/features/semantic.py strict replacement with safer embedding-column detection
 
 from __future__ import annotations
+
 from pathlib import Path
 from typing import Any, Dict
 import ast
@@ -11,15 +12,21 @@ import torch
 
 def _parse_embedding_cell(x: Any) -> np.ndarray:
     if isinstance(x, np.ndarray):
-        return x.astype(np.float32)
-    if isinstance(x, list):
-        return np.asarray(x, dtype=np.float32)
-    if isinstance(x, str):
-        return np.asarray(ast.literal_eval(x), dtype=np.float32)
-    return np.asarray(x, dtype=np.float32)
+        arr = x
+    elif isinstance(x, list):
+        arr = np.asarray(x)
+    elif isinstance(x, str):
+        arr = np.asarray(ast.literal_eval(x))
+    else:
+        arr = np.asarray(x)
+    return arr.astype(np.float32)
 
 
-def find_embedding_parquet(data_root: str | Path, domain: str, embedding_dir: str = "semantic_embeddings") -> Path:
+def find_embedding_parquet(
+    data_root: str | Path,
+    domain: str,
+    embedding_dir: str = "semantic_embeddings",
+) -> Path:
     root = Path(data_root)
     candidates = [
         root / embedding_dir / f"{domain}_embedding_llama_fixed.parquet",
@@ -33,6 +40,57 @@ def find_embedding_parquet(data_root: str | Path, domain: str, embedding_dir: st
         if p.exists():
             return p
     raise FileNotFoundError(f"Cannot find embedding parquet for {domain}. Tried={candidates}")
+
+
+def _looks_like_vector_column(df: pd.DataFrame, col: str, sample_size: int = 20) -> bool:
+    values = df[col].dropna().head(sample_size).tolist()
+    if not values:
+        return False
+    ok = 0
+    for x in values:
+        try:
+            arr = _parse_embedding_cell(x)
+            if arr.ndim == 1 and arr.shape[0] > 8:
+                ok += 1
+        except Exception:
+            pass
+    return ok > 0
+
+
+def _select_vector_col(df: pd.DataFrame, requested: str, path: Path) -> str:
+    """
+    Pick the real embedding vector column.
+
+    This avoids accidentally selecting scalar columns such as OldEmbeddingItemId
+    just because their names contain the substring "embedding".
+    """
+    if requested in df.columns and _looks_like_vector_column(df, requested):
+        return requested
+
+    priority = [
+        "item_text_embedding",
+        "text_embedding",
+        "semantic_embedding",
+        "embedding_vector",
+        "embeddings",
+        "embedding",
+    ]
+    for col in priority:
+        if col in df.columns and _looks_like_vector_column(df, col):
+            return col
+
+    candidates = [
+        c for c in df.columns
+        if "embedding" in c.lower() and _looks_like_vector_column(df, c)
+    ]
+    if candidates:
+        return candidates[0]
+
+    raise ValueError(
+        f"No valid vector embedding column found in {path}. "
+        f"requested={requested}, columns={list(df.columns)}. "
+        "A valid embedding column should contain 1-D numeric vectors, e.g. item_text_embedding."
+    )
 
 
 def load_semantic_embeddings(
@@ -57,14 +115,24 @@ def load_semantic_embeddings(
         raise ValueError(f"{path} has no item id column. Row-order alignment is forbidden.")
     id_col = "RawItemId" if "RawItemId" in df.columns else id_candidates[0]
 
-    if vector_col not in df.columns:
-        cands = [c for c in df.columns if "embedding" in c.lower()]
-        if not cands:
-            raise ValueError(f"No embedding column in {path}; columns={list(df.columns)}")
-        vector_col = cands[0]
+    vector_col = _select_vector_col(df, vector_col, path)
 
     raw_ids = df[id_col].astype(str).tolist()
-    vectors = [_parse_embedding_cell(x) for x in df[vector_col].tolist()]
+    vectors = []
+    bad_shape = []
+    for rid, x in zip(raw_ids, df[vector_col].tolist()):
+        vec = _parse_embedding_cell(x)
+        if vec.ndim != 1 or vec.shape[0] <= 8:
+            bad_shape.append((rid, tuple(vec.shape)))
+            continue
+        vectors.append(vec)
+
+    if bad_shape:
+        raise ValueError(
+            f"{path}: selected vector_col={vector_col}, but {len(bad_shape)} rows are not valid vectors. "
+            f"samples={bad_shape[:10]}"
+        )
+
     dims = [int(v.shape[0]) for v in vectors]
     if len(set(dims)) != 1:
         raise ValueError(f"Inconsistent embedding dims in {path}: {sorted(set(dims))}")
@@ -104,4 +172,9 @@ def load_semantic_embeddings(
     if strict and zero:
         raise ValueError(f"{domain}: {len(zero)} embeddings are zero vectors. samples={zero[:20]}")
 
+    print(
+        f"[SemanticEmbedding] domain={domain} file={path} id_col={id_col} "
+        f"vector_col={vector_col} table_shape={table.shape}",
+        flush=True,
+    )
     return torch.from_numpy(table)

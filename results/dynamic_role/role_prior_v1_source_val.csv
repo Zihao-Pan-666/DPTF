@@ -1,0 +1,2 @@
+model,stage,source,seed,checkpoint,pred_source_role_path,best_epoch,best_val_kl,embedding_dim,role_dim
+role_prior_v1,source_role_prior,amazon_movies_and_tv,2026,artifacts\checkpoints\role_prior_amazon_movies_and_tv_seed2026.pt,artifacts\roles\pred_source_role_table_amazon_movies_and_tv_seed2026.pt,39,0.3710910379886627,4096,4
