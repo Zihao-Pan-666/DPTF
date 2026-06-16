@@ -1,0 +1,44 @@
+[
+  {
+    "role_mass":{
+      "0":0.2597315609,
+      "1":0.1515631974,
+      "2":0.3480888009,
+      "3":0.240583688
+    },
+    "hard_counts":{
+      "0":281255,
+      "1":145000,
+      "2":360559,
+      "3":266423
+    },
+    "mean_assignment_entropy":0.1524215937,
+    "median_assignment_entropy":0.0663665608,
+    "min_role_mass":0.1515631974,
+    "max_role_mass":0.3480888009,
+    "num_roles_below_min_mass":0,
+    "trend_centroid_range":0.3193907738,
+    "level_centroid_range":0.4050809741,
+    "centroid_names":[
+      {
+        "role":0,
+        "suggested_name":"stable-head"
+      },
+      {
+        "role":1,
+        "suggested_name":"declining-like"
+      },
+      {
+        "role":2,
+        "suggested_name":"rising-like"
+      },
+      {
+        "role":3,
+        "suggested_name":"mild-declining"
+      }
+    ],
+    "warnings":[
+
+    ]
+  }
+]

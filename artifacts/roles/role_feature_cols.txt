@@ -1,0 +1,3 @@
+level
+trend
+abs_trend

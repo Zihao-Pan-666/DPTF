@@ -11,7 +11,10 @@ from isddg.data.io import load_interactions, group_user_sequences, build_target_
 from isddg.data.dataset import PrefixDataset, collate_prefix
 from isddg.features.semantic import load_semantic_embeddings
 from isddg.models.backbone import FeatureBERT4Rec
-from isddg.training.continuous_dynamic_prior_trainer import load_continuous_predictor_from_checkpoint, predict_continuous_table
+from isddg.training.continuous_dynamic_prior_v2_trainer import (
+    load_continuous_v2_from_checkpoint,
+    predict_continuous_table_v2
+)
 from isddg.evaluation.dynamic_signal_evaluator import evaluate_dynamic_signal
 
 def cfg_get(cfg, sec, key, default):
@@ -79,7 +82,7 @@ def main():
 
     ckpt = torch.load(semantic_checkpoint, map_location="cpu")
     hp = ckpt.get("model_hparams", {})
-    predictor, _ = load_continuous_predictor_from_checkpoint(cont_ckpt, device)
+    predictor, _ = load_continuous_v2_from_checkpoint(cont_ckpt, device)
 
     for target in targets:
         df, item_map = load_interactions(data_root, target)
@@ -87,7 +90,7 @@ def main():
         samples = build_target_eval_samples(seqs, max_len=max_len)
         sem = load_semantic_embeddings(data_root=data_root, domain=target, item_map=item_map, embedding_dir=args.embedding_dir, strict=True)[:len(item_map)+1]
         sem[0] = 0.0
-        dyn_table = predict_continuous_table(predictor, sem, device=device)
+        dyn_table = predict_continuous_table_v2(predictor, sem, device=device)
 
         model = FeatureBERT4Rec(item_features=sem, hidden_dim=int(hp.get("hidden_dim", cfg_get(cfg, "model", "hidden_dim", 128))), max_len=max_len, num_layers=int(hp.get("num_layers", cfg_get(cfg, "model", "num_layers", 2))), num_heads=int(hp.get("num_heads", cfg_get(cfg, "model", "num_heads", 2))), dropout=float(hp.get("dropout", cfg_get(cfg, "model", "dropout", 0.2))), role_features=None, role_alpha=0.0)
         missing, unexpected = model.load_state_dict(ckpt["model_state"], strict=False)

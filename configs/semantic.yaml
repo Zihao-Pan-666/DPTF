@@ -4,8 +4,8 @@ targets:
   - amazon_cds_and_vinyl
 
 paths:
-  checkpoint_dir: artifacts/checkpoints
-  result_dir: results
+  checkpoint_dir: artifacts/checkpoints/semantic-only
+  result_dir: results/semantic-only
   role_dir: artifacts/roles
   prototype_dir: artifacts/prototypes
 

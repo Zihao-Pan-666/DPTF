@@ -13,7 +13,10 @@ from isddg.data.semantic_splits import build_source_train_val_samples
 from isddg.features.semantic import load_semantic_embeddings
 from isddg.features.dynamic_feature_store import load_pt_feature_table
 from isddg.models.backbone import FeatureBERT4Rec
-from isddg.training.continuous_dynamic_prior_trainer import load_continuous_predictor_from_checkpoint, predict_continuous_table
+from isddg.training.continuous_dynamic_prior_v2_trainer import (
+    load_continuous_v2_from_checkpoint,
+    predict_continuous_table_v2
+)
 from isddg.evaluation.dynamic_signal_evaluator import evaluate_dynamic_signal, parse_beta_grid
 
 def cfg_get(cfg, sec, key, default):
@@ -90,8 +93,8 @@ def main():
         dyn_table = load_pt_feature_table(continuous_table_path, num_items=len(item_map))
         feature_source = str(continuous_table_path)
     else:
-        predictor, _ = load_continuous_predictor_from_checkpoint(cont_ckpt, device)
-        dyn_table = predict_continuous_table(predictor, sem, device=device)
+        predictor, _ = load_continuous_v2_from_checkpoint(cont_ckpt, device)
+        dyn_table = predict_continuous_table_v2(predictor, sem, device=device)
         feature_source = str(cont_ckpt)
 
     loader = DataLoader(PrefixDataset(val_samples, len(item_map), max_len), batch_size=batch_size, shuffle=False, collate_fn=collate_prefix, num_workers=cfg_get(cfg, "data", "num_workers", 0), pin_memory=torch.cuda.is_available())
