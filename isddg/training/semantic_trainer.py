@@ -5,6 +5,7 @@ from typing import Dict, Sequence
 import time
 
 import torch
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -12,7 +13,7 @@ from isddg.evaluation.semantic_evaluator import evaluate_semantic_ranking
 
 
 def bpr_loss(pos_logits: torch.Tensor, neg_logits: torch.Tensor) -> torch.Tensor:
-    return -torch.log(torch.sigmoid(pos_logits.unsqueeze(1) - neg_logits) + 1e-10).mean()
+    return -F.logsigmoid(pos_logits.unsqueeze(1) - neg_logits).mean()
 
 
 @torch.no_grad()
@@ -25,7 +26,7 @@ def _sample_training_negatives_fast(
     max_rounds: int = 16,
 ) -> torch.Tensor:
     batch_size, _ = train_seq.size()
-    neg_items = torch.randint(1, num_items + 1, size=(batch_size, num_negatives), device=device)
+    neg_items = torch.randint(1, int(num_items) + 1, size=(batch_size, int(num_negatives)), device=device)
     blocked = torch.cat([train_seq, pos_items.unsqueeze(1)], dim=1)
 
     for _ in range(max_rounds):
@@ -33,7 +34,7 @@ def _sample_training_negatives_fast(
         if not invalid.any():
             break
         neg_items[invalid] = torch.randint(
-            1, num_items + 1, size=(int(invalid.sum().item()),), device=device
+            1, int(num_items) + 1, size=(int(invalid.sum().item()),), device=device
         )
 
     invalid = (neg_items.unsqueeze(-1) == blocked.unsqueeze(1)).any(dim=-1)
@@ -41,9 +42,9 @@ def _sample_training_negatives_fast(
         invalid_indices = invalid.nonzero(as_tuple=False)
         for idx in invalid_indices:
             b, n = int(idx[0].item()), int(idx[1].item())
-            blocked_set = {int(x) for x in blocked[b].tolist() if int(x) != 0}
+            blocked_set = {int(x) for x in blocked[b].detach().cpu().tolist() if int(x) != 0}
             while True:
-                candidate = int(torch.randint(1, num_items + 1, (1,), device=device).item())
+                candidate = int(torch.randint(1, int(num_items) + 1, (1,), device=device).item())
                 if candidate not in blocked_set:
                     neg_items[b, n] = candidate
                     break
@@ -72,8 +73,14 @@ def train_semantic_v0(
     checkpoint_extra: Dict | None = None,
     show_progress: bool = True,
 ) -> Dict:
+    """Train the semantic-only BERT4Rec baseline.
+
+    Public inputs/outputs are kept unchanged. The evaluator call is aligned with
+    semantic_evaluator's tie-policy-aware signature.
+    """
     model.to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+
     checkpoint_path = Path(checkpoint_path)
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -113,9 +120,9 @@ def train_semantic_v0(
             torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
             optimizer.step()
 
-            bs = hist.size(0)
-            total_loss += float(loss.item()) * bs
-            total_examples += bs
+            batch_size = hist.size(0)
+            total_loss += float(loss.item()) * batch_size
+            total_examples += batch_size
             elapsed = max(time.perf_counter() - start, 1e-9)
 
             if show_progress:

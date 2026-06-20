@@ -1,0 +1,36 @@
+data_root: ./data
+source: amazon_movies_and_tv
+targets:
+  - amazon_cds_and_vinyl
+
+paths:
+  role_dir: artifacts/roles/amazon_movies_and_tv_k4_default
+  dynamic_dir: artifacts/dynamics/amazon_movies_and_tv_continuous
+  checkpoint_dir: artifacts/checkpoints
+  result_dir: results/mainline/amazon_movies_and_tv_to_amazon_cds_and_vinyl
+
+data:
+  seed: 2026
+  max_len: 50
+  min_len: 3
+  ranking: sampled
+  eval_negatives: 100
+  train_negatives: 5
+  num_workers: 0
+
+roles:
+  K: 4
+  n_bins: 30
+  recent_quantile: 0.2
+  very_recent_quantile: 0.1
+  mid_quantile: 0.5
+  long_gamma: 0.9
+
+  # Keep role clustering compact and interpretable.
+  # The continuous dynamic prior still predicts the full 7-D continuous vector.
+  feature_mode: level_trend
+  trend_weight: 3.0
+  abs_trend_weight: 1.5
+  accel_weight: 1.0
+  min_role_mass: 0.03
+  covariance_type: full

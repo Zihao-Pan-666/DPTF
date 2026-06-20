@@ -1,3 +1,0 @@
-﻿source,target,source_users,target_users,source_items,target_items,user_overlap,item_overlap,zero_shot_ok
-amazon_movies_and_tv,amazon_cds_and_vinyl,179784,15853,84909,20082,0,0,True
-amazon_movies_and_tv,amazon_industrial_and_scientific,179784,43869,84909,24315,0,0,True

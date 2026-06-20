@@ -1,8 +1,0 @@
-[project]
-name = "isddg-initial"
-version = "0.1.0"
-description = "Initial ISDDG experiment codebase"
-requires-python = ">=3.9"
-
-[tool.setuptools.packages.find]
-include = ["isddg*"]

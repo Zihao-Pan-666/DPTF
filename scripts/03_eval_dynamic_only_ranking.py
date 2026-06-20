@@ -20,7 +20,7 @@ def cfg_get(cfg, sec, key, default):
 
 def main():
     ap = argparse.ArgumentParser(description="Evaluate pure dynamic-signal-only ranking on source validation.")
-    ap.add_argument("--config", default="configs/dynamic_signal_diagnostics_v1.yaml")
+    ap.add_argument("--config", default="configs/continuous_dynamic.yaml")
     ap.add_argument("--feature_table_path", default=None)
     ap.add_argument("--feature_type", default="oracle_role", choices=["oracle_role", "continuous_oracle"])
     ap.add_argument("--data_root", default=None)

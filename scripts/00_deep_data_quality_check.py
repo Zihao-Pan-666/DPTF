@@ -362,6 +362,7 @@ def check_one_domain(
     domain: str,
     source: str,
     sample_missing: int = 10,
+    embedding_dir: str = "semantic_embeddings",
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     csv_path = find_processed_csv(data_root, domain)
     df, item_map = load_interactions(data_root, domain)
@@ -373,6 +374,7 @@ def check_one_domain(
         df=df,
         item_map=item_map,
         sample_missing=sample_missing,
+        embedding_dir=embedding_dir,
     )
 
     # summary CSV 不适合保存很长的 list，但 shape 字段需要保留
@@ -515,6 +517,7 @@ def main():
             domain=domain,
             source=args.source,
             sample_missing=args.sample_missing,
+            embedding_dir=args.embedding_dir,
         )
         summary_rows.append(row)
         details[domain] = detail

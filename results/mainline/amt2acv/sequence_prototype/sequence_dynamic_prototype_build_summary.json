@@ -1,0 +1,28 @@
+{
+  "format": "sequence_dynamic_prototype_v1",
+  "source": "amazon_movies_and_tv",
+  "seed": 2026,
+  "M": 128,
+  "num_items": 84909,
+  "num_train_prefix_samples": 2976298,
+  "num_source_val_samples": 179784,
+  "max_len": 50,
+  "semantic_checkpoint": "artifacts\\checkpoints\\semantic_final\\semantic_amazon_movies_and_tv_seed2026.pt",
+  "source_dynamic_table": "artifacts\\dynamics\\amazon_movies_and_tv_continuous\\source_continuous_dynamic_table.pt",
+  "source_role_table": "artifacts\\roles\\amazon_movies_and_tv_k4_default\\source_role_table.pt",
+  "hidden_dim": 128,
+  "dynamic_dim": 7,
+  "role_dim": 4,
+  "empty_clusters": 0,
+  "min_support": 7898,
+  "median_support": 19438.5,
+  "max_support": 116040,
+  "elapsed_sec": 267.23436040000524,
+  "protocol": {
+    "target_interaction_usage": "none",
+    "prototype_construction": "source_train_prefixes_only",
+    "value_semantic": "source next-item projected semantic vector",
+    "value_dynamic": "source next-item oracle continuous dynamic vector, if provided",
+    "value_role": "source next-item soft role distribution, if provided"
+  }
+}

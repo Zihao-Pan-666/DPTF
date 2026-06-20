@@ -19,7 +19,7 @@ from isddg.data.dataset import PrefixDataset, collate_prefix
 from isddg.data.semantic_splits import build_source_train_val_samples
 from isddg.features.semantic import load_semantic_embeddings
 from isddg.models.backbone import FeatureBERT4Rec
-from isddg.training.semantic_v0_trainer import train_semantic_v0
+from isddg.training.semantic_trainer import train_semantic_v0
 
 
 def cfg_get(cfg: Dict[str, Any], section: str, key: str, default: Any) -> Any:
@@ -46,11 +46,11 @@ def timed(name: str):
 
 
 def parse_args():
-    ap = argparse.ArgumentParser(description="Train V0 Semantic-only BERT4Rec on source domain only.")
+    ap = argparse.ArgumentParser(description="Train Semantic-only BERT4Rec on source domain only.")
     ap.add_argument("--config", default="configs/semantic_v0.yaml")
     ap.add_argument("--source", default=None)
-    ap.add_argument("--data_root", default="./data")
-    ap.add_argument("--embedding_dir", default="semantic_embeddings")
+    ap.add_argument("--data_root", default=None)
+    ap.add_argument("--embedding_dir", default=None)
     ap.add_argument("--checkpoint_path", default=None)
     ap.add_argument("--results_path", default=None)
     ap.add_argument("--seed", type=int, default=None)
@@ -84,6 +84,7 @@ def main():
 
     source = args.source or cfg.get("source", "amazon_movies_and_tv")
     data_root = args.data_root or cfg.get("data_root", "./data")
+    embedding_dir = args.embedding_dir or cfg_get(cfg, "data", "embedding_dir", "semantic_embeddings")
     seed = args.seed if args.seed is not None else cfg_get(cfg, "data", "seed", 2026)
     max_len = args.max_len if args.max_len is not None else cfg_get(cfg, "data", "max_len", 50)
     min_len = args.min_len if args.min_len is not None else cfg_get(cfg, "data", "min_len", 3)
@@ -108,14 +109,14 @@ def main():
 
     ckpt_dir = Path(cfg.get("paths", {}).get("checkpoint_dir", "artifacts/checkpoints"))
     result_dir = Path(cfg.get("paths", {}).get("result_dir", "results"))
-    checkpoint_path = Path(args.checkpoint_path) if args.checkpoint_path else ckpt_dir / f"semantic_v0_{source}_seed{seed}.pt"
-    results_path = Path(args.results_path) if args.results_path else result_dir / "semantic_v0_source_val.csv"
+    checkpoint_path = Path(args.checkpoint_path) if args.checkpoint_path else ckpt_dir / f"semantic_{source}_seed{seed}.pt"
+    results_path = Path(args.results_path) if args.results_path else result_dir / "semantic_source_val.csv"
 
     print("=" * 80)
     print("[SemanticV0] Source-only training")
     print(f"source={source}")
     print(f"data_root={data_root}")
-    print(f"embedding_dir={args.embedding_dir}")
+    print(f"embedding_dir={embedding_dir}")
     print(f"seed={seed}")
     print(f"device={device}")
     print(f"checkpoint_path={checkpoint_path}")
@@ -145,7 +146,7 @@ def main():
             data_root=data_root,
             domain=source,
             item_map=item_map,
-            embedding_dir=args.embedding_dir,
+            embedding_dir=embedding_dir,
             strict=True,
         )[: len(item_map) + 1]
         item_features[0] = 0.0
@@ -231,7 +232,7 @@ def main():
         },
     )
 
-    summary_json = result_dir / f"semantic_v0_{source}_seed{seed}_train_summary.json"
+    summary_json = result_dir / f"semantic_{source}_seed{seed}_train_summary.json"
     with timed("save training summary and source-val csv"):
         save_json(train_summary, summary_json)
         append_csv({

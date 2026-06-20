@@ -45,13 +45,13 @@ def timed(name: str):
 
 
 def parse_args():
-    ap = argparse.ArgumentParser(description="Strict zero-shot evaluation for V0 Semantic-only BERT4Rec.")
-    ap.add_argument("--config", default="configs/semantic_v0.yaml")
+    ap = argparse.ArgumentParser(description="Strict zero-shot evaluation for Semantic-only BERT4Rec.")
+    ap.add_argument("--config", default="configs/semantic_final.yaml")
     ap.add_argument("--checkpoint", required=True)
     ap.add_argument("--targets", default=None, help="comma-separated target domains")
     ap.add_argument("--source", default=None)
-    ap.add_argument("--data_root", default="./data")
-    ap.add_argument("--embedding_dir", default="semantic_embeddings")
+    ap.add_argument("--data_root", default=None)
+    ap.add_argument("--embedding_dir", default=None)
     ap.add_argument("--results_path", default=None)
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--max_len", type=int, default=None)
@@ -76,6 +76,7 @@ def main():
     args = parse_args()
     cfg = load_config(args.config)
     data_root = args.data_root or cfg.get("data_root", "./data")
+    embedding_dir = args.embedding_dir or cfg_get(cfg, "data", "embedding_dir", "semantic_embeddings")
     seed = args.seed if args.seed is not None else cfg_get(cfg, "data", "seed", 2026)
     max_len = args.max_len if args.max_len is not None else cfg_get(cfg, "data", "max_len", 50)
     min_len = args.min_len if args.min_len is not None else cfg_get(cfg, "data", "min_len", 3)
@@ -100,10 +101,10 @@ def main():
     dropout = float(model_hparams.get("dropout", cfg_get(cfg, "model", "dropout", 0.2)))
 
     result_dir = Path(cfg.get("paths", {}).get("result_dir", "results"))
-    results_path = Path(args.results_path) if args.results_path else result_dir / "semantic_v0_zero_shot.csv"
+    results_path = Path(args.results_path) if args.results_path else result_dir / "semantic_zero_shot.csv"
 
     print("=" * 80)
-    print("[SemanticV0] Strict zero-shot evaluation")
+    print("[Semantic] Strict zero-shot evaluation")
     print(f"source={source}")
     print(f"targets={targets}")
     print(f"checkpoint={checkpoint_path}")
@@ -137,7 +138,7 @@ def main():
                 data_root=data_root,
                 domain=target,
                 item_map=item_map,
-                embedding_dir=args.embedding_dir,
+                embedding_dir=embedding_dir,
                 strict=True,
             )[: len(item_map) + 1]
             item_features[0] = 0.0
@@ -214,7 +215,7 @@ def main():
             "target_total_elapsed_sec": time.perf_counter() - target_start,
         }
 
-        metrics_json = result_dir / f"semantic_v0_{source}_to_{target}_{ranking_mode}_seed{seed}.json"
+        metrics_json = result_dir / f"semantic_{source}_to_{target}_{ranking_mode}_seed{seed}.json"
         with timed("save target metrics"):
             append_csv(row, results_path)
             save_json(row, metrics_json)
