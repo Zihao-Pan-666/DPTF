@@ -1,0 +1,61 @@
+{
+  "run_name": "smoke_sem",
+  "mode": "sem",
+  "source_domain": "amazon_movies_and_tv",
+  "seed": 2026,
+  "best_epoch": 1,
+  "best_metric_name": "NDCG@10",
+  "best_metric_value": 0.08676221573152118,
+  "checkpoint_path": "artifacts\\checkpoints\\bert4rec_family\\smoke_sem_amazon_movies_and_tv_seed2026.pt",
+  "elapsed_seconds": 0.5440883636474609,
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 4.167577332258224,
+      "bpr": 4.167577332258224,
+      "align": 0.0,
+      "intra": 0.0,
+      "inter": 0.0,
+      "sic": 0.0,
+      "id": 0.0,
+      "omega": 0.0,
+      "delta": 0.0,
+      "grad_norm": 59.205632877349856,
+      "val_num_examples": 1280.0,
+      "val_Recall@10": 0.15703125,
+      "val_NDCG@10": 0.08676221573152118,
+      "val_MRR@10": 0.06527250744047619,
+      "val_Recall@20": 0.22890625,
+      "val_NDCG@20": 0.10472176696026478,
+      "val_MRR@20": 0.07009225868032468,
+      "val_all_equal_ratio": 0.0,
+      "val_tie_case_ratio": 0.49375,
+      "val_avg_tie_items": 13.784375,
+      "val_mean_rank_1based": 36.60859375
+    }
+  ],
+  "config_path": "configs\\bert4rec_sem_matched.yaml",
+  "model_hparams": {
+    "hidden_dim": 128,
+    "max_len": 50,
+    "num_layers": 2,
+    "num_heads": 2,
+    "dropout": 0.2,
+    "architecture": "single",
+    "embedding_dim": 4096
+  },
+  "num_source_users": 179784,
+  "num_source_items": 84909,
+  "num_train_samples": 2976298,
+  "num_val_samples": 179784,
+  "auxiliary_metadata": [],
+  "protocol": {
+    "checkpoint_selection": "source_validation_only",
+    "target_interactions_used_for_training": false,
+    "target_interactions_used_for_model_selection": false,
+    "left_padding_readout": "last_position",
+    "candidate_projection": "recommendation_projection",
+    "finite_fail_fast": true,
+    "fixed_validation_candidates_across_epochs": true
+  }
+}

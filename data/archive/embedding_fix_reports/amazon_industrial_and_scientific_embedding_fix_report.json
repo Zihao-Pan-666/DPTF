@@ -1,0 +1,30 @@
+{
+  "domain": "amazon_industrial_and_scientific",
+  "old_csv": "data\\processed\\amazon_industrial_and_scientific.csv",
+  "new_csv": "data\\processed_strict\\amazon_industrial_and_scientific.csv",
+  "old_parquet": "data\\semantic_embeddings\\amazon_industrial_and_scientific_embedding_llama.parquet",
+  "old_manifest": "data\\item_manifests\\amazon_industrial_and_scientific_old_llm_item_manifest.csv",
+  "new_manifest": "data\\item_manifests\\amazon_industrial_and_scientific_item_manifest.csv",
+  "fixed_parquet": "data\\semantic_embeddings_fixed\\amazon_industrial_and_scientific_embedding_llama_fixed.parquet",
+  "old_items": 24315,
+  "new_items": 24315,
+  "dropped_items_after_strict_filter": 0,
+  "dropped_item_samples": [],
+  "new_items_not_in_old_embedding_source": 0,
+  "new_item_samples": [],
+  "items_fixed": 24315,
+  "embedding_dim": 4096,
+  "nonfinite_rows": 0,
+  "zero_rows": 0,
+  "norm_min": 78.61249542236328,
+  "norm_mean": 98.45800866094264,
+  "norm_max": 114.97232055664062,
+  "sha256": {
+    "old_csv": "47044e74b0a47d48b3069e9ac596cdb569515e30aca929c93285dad1a8250ba7",
+    "new_csv": "e4760c701565949328db23023bfb3188dba99ee0940fb0e00b023693dc692223",
+    "old_parquet": "da4f87ec23c6059cd7a6d3a7882e78a4d16ab8910ae51bfd2b9fcc77e3a22a1f",
+    "old_manifest": "4a8569554db30d2d0fa128b6161b28fff9738125a87cce9862b6e5a4b2672b98",
+    "new_manifest": "747787676b14d28d5a5ac617d6e918d141b8f1aef49407c2408af5b57ba45c89",
+    "fixed_parquet": "c5f20a9188985eb592f9e8d7fdfc04c9dab617f82d2d4e637fc03ccfb2856da2"
+  }
+}
